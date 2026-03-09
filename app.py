@@ -2,8 +2,12 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def home():
-    q = request.args.get("q")
-    print(q)
+    if request.method == "POST":
+        pw = request.form['pw']
+        if pw == "123":
+            return "Access granted"
+        else:
+            return "Access denied"
     return render_template("index.html")
