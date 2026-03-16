@@ -1,23 +1,29 @@
 from flask import Flask, render_template, request
+import sqlite3
 
 app = Flask(__name__)
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
-        f = open("login.txt", "w")
-        f.write(request.form['password'])
-        f.close()
+        con = sqlite3.connect("database.db")
+        cur = con.cursor()
+        cur.execute("INSERT INTO users (username, password) VALUES (?, ?)", 
+        (request.form['username'], request.form['password']))
+        con.commit()
+        con.close()
+        return "User registered successfully"
     return render_template("signup.html")
 
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
-        pw = request.form['password']
-        f = open("login.txt", "r")
-        stored_password = f.read()
-        f.close()
-        if pw == stored_password:
+        con = sqlite3.connect("database.db")
+        cur = con.cursor()
+        cur.execute("SELECT * FROM users WHERE username = ? AND password = ?", 
+        (request.form['username'], request.form['password']))
+        result = cur.fetchone()
+        if result:
             return "Access granted"
         else:
             return "Access denied"
